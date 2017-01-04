@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    buildToolsVersion '24.0.2'
     defaultConfig {
         applicationId "com.example.ugo.pyptest2"
         minSdkVersion 23
@@ -30,7 +30,9 @@ dependencies {
     compile 'com.google.firebase:firebase-auth:10.0.1'
     compile 'com.android.support:design:24.2.1'
     compile 'com.google.firebase:firebase-database:10.0.1'
-    compile 'com.google.android.gms:play-services:10.0.1'
+    compile 'com.google.android.gms:play-services-maps:10.0.1'
+    compile 'com.google.android.gms:play-services-location:10.0.1'
+    compile 'com.google.firebase:firebase-appindexing:10.0.1'
     compile 'com.google.maps.android:android-maps-utils:0.4+'
     testCompile 'junit:junit:4.12'
 }
