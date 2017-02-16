@@ -13,24 +13,9 @@
     tools:context="com.example.ugo.pyptest2.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <ImageView
-
-    android:id="@+id/imageViewCompass"
-
-    android:layout_width="100dp"
-
-    android:layout_height="100dp"
-    android:layout_centerHorizontal="true"
-
-    android:src="@drawable/compass" />
-
-
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-
-
-        android:layout_below="@+id/imageViewCompass"
 
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"

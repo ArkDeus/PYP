@@ -1,32 +1,22 @@
 package com.example.ugo.pyptest2;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -40,7 +30,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -50,10 +39,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.maps.android.SphericalUtil;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback, SensorEventListener {
+        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback, PathFriendsFragment.OnFragmentInteractionListener,ListRDVFragment.OnFragmentInteractionListener {
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -62,7 +50,6 @@ public class MainActivity extends AppCompatActivity
 
     private DatabaseReference mDatabase;
 
-    private FloatingActionButton fab;
     private Button rdv;
 
     private GoogleMap mMap;
@@ -72,16 +59,6 @@ public class MainActivity extends AppCompatActivity
     private ImageView image;
 
 
-    // record the compass picture angle turned
-
-    private float currentDegree = 0f;
-
-    private double angle;
-
-
-    // device sensor manager
-
-    private SensorManager mSensorManager;
 
 
     @Override
@@ -90,6 +67,18 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        Fragment fragment = null;
+        Class fragmentClass = null;
+        fragmentClass = ListRDVFragment.class;
+        try {
+            fragment = (Fragment) fragmentClass.newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
 
         //get firebase auth instance
         auth = FirebaseAuth.getInstance();
@@ -117,18 +106,10 @@ public class MainActivity extends AppCompatActivity
                     .addApi(AppIndex.API).build();
         }
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         //Créer un rdv bouton
-        rdv = (Button) findViewById(R.id.rdv);
+/*        rdv = (Button) findViewById(R.id.rdv);
         rdv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -137,13 +118,13 @@ public class MainActivity extends AppCompatActivity
                 finish();
 
             }
-        });
+        });*/
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+/*        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        mapFragment.getMapAsync(this);*/
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -153,10 +134,6 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        image = (ImageView) findViewById(R.id.imageViewCompass);
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         View hView = navigationView.getHeaderView(0);
@@ -168,8 +145,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_GAME);
 
     }
 
@@ -213,10 +188,13 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        Fragment fragment = null;
+        Class fragmentClass = null;
 
+        if (id == R.id.nav_camera) {
+            fragmentClass = ListRDVFragment.class;
+        } else if (id == R.id.nav_gallery) {
+            fragmentClass = PathFriendsFragment.class;
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {
@@ -226,6 +204,13 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_send) {
 
         }
+        try {
+            fragment = (Fragment) fragmentClass.newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.flContent, fragment).commit();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -257,26 +242,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    return;
-                }
-                mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                        mGoogleApiClient);
-                if (mLastLocation != null) {
-                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                    if (user != null) {
-                        mDatabase.child("users").child(user.getUid()).child("lastLocation").setValue(new MyLocation(mLastLocation));
-                    }
-                    Snackbar.make(view, mLastLocation.toString(), Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                }
 
-            }
-        });
     }
 
     @Override
@@ -321,34 +287,6 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-
-        LatLng start = new LatLng(43.6239839,7.04892);
-        LatLng finish = new LatLng(43.623929,7.049490);
-        // get the angle around the z-axis rotated
-        float degree = Math.round(event.values[0]);
-        // create a rotation animation (reverse turn degree degrees)
-        RotateAnimation ra = new RotateAnimation(0, 90, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        // how long the animation will take place
-        ra.setDuration(210);
-        // set the animation after the end of the reservation status
-        ra.setFillAfter(true);
-        // Start the animation
-        image.startAnimation(ra);
-        currentDegree = -(degree+(float)SphericalUtil.computeHeading(start,finish));
-
-        Log.w("YOLO",""+SphericalUtil.computeHeading(start,finish));
-        Log.w("YOLO degree",""+degree);
-
-
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
-
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -363,5 +301,10 @@ public class MainActivity extends AppCompatActivity
                 .setObject(object)
                 .setActionStatus(Action.STATUS_TYPE_COMPLETED)
                 .build();
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 }
