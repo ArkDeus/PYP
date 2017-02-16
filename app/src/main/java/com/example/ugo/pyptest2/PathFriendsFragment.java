@@ -98,7 +98,7 @@ public class PathFriendsFragment extends Fragment implements
         auth = FirebaseAuth.getInstance();
         auth.addAuthStateListener(authListener);
         mGoogleApiClient.connect();
-// Obtain the SupportMapFragment and get notified when the map is ready to be used.
+    // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         FragmentManager fm = getActivity().getSupportFragmentManager();
         SupportMapFragment supportMapFragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
         if (supportMapFragment == null) {
