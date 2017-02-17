@@ -6,6 +6,7 @@ import com.google.firebase.database.Exclude;
 
 /**
  * Created by Ugo on 02/01/2017.
+ * User class needed for Firebase
  */
 
 public class User {

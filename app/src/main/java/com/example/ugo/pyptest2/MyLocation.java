@@ -11,6 +11,7 @@ public class MyLocation {
     private Double latitude;
     private Double longitude;
 
+    //Default constructor for Firebase
     public MyLocation() {}
 
     public MyLocation(Location location) {
