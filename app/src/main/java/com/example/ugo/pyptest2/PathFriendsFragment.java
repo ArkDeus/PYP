@@ -14,6 +14,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,7 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -62,6 +64,7 @@ public class PathFriendsFragment extends Fragment implements
     private Location mLastLocation;
     private GoogleApiClient mGoogleApiClient;
     private DatabaseReference mDatabase;
+    private FirebaseDatabase mDatabaseInstance;
     private FirebaseAuth.AuthStateListener authListener;
     private FirebaseAuth auth;
     private GoogleMap mMap;
@@ -96,25 +99,26 @@ public class PathFriendsFragment extends Fragment implements
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         auth = FirebaseAuth.getInstance();
-        auth.addAuthStateListener(authListener);
-        mGoogleApiClient.connect();
-    // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        FragmentManager fm = getActivity().getSupportFragmentManager();
-        SupportMapFragment supportMapFragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
-        if (supportMapFragment == null) {
-            supportMapFragment = SupportMapFragment.newInstance();
-            fm.beginTransaction().replace(R.id.map, supportMapFragment).commit();
+        //auth.addAuthStateListener(authListener);
+
+
+        if (mGoogleApiClient == null) {
+            // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
+            // See https://g.co/AppIndexing/AndroidStudio for more information.
+            mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+                    .addApi(LocationServices.API)
+                    .addApi(AppIndex.API).addConnectionCallbacks( this)
+                    .build();
         }
-        supportMapFragment.getMapAsync(this);
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_path_friends, container, false);
 
-
-        fab = (FloatingActionButton)  getView().findViewById(R.id.fab);
+        fab = (FloatingActionButton)  rootView.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -123,21 +127,27 @@ public class PathFriendsFragment extends Fragment implements
                         .setAction("Action", null).show();
             }
         });
-        if (mGoogleApiClient == null) {
-            // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
-            // See https://g.co/AppIndexing/AndroidStudio for more information.
-            mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
-                    .addApi(LocationServices.API)
-                    .addApi(AppIndex.API).build();
-        }
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabaseInstance = FirebaseDatabase.getInstance();
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        SupportMapFragment supportMapFragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
+       supportMapFragment = SupportMapFragment.newInstance();
+            fm.beginTransaction().replace(R.id.map, supportMapFragment).commit();
 
-
+        supportMapFragment.getMapAsync(this);
 
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_path_friends, container, false);
+        return rootView;
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (mGoogleApiClient != null)
+            mGoogleApiClient.connect();
     }
 
 
@@ -163,6 +173,10 @@ public class PathFriendsFragment extends Fragment implements
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        if (authListener != null) {
+            auth.removeAuthStateListener(authListener);
+        }
+        mGoogleApiClient.disconnect();
     }
 
     @Override
@@ -174,6 +188,7 @@ public class PathFriendsFragment extends Fragment implements
                     // TODO: Consider calling
                     return;
                 }
+                Log.w("YOLOO","sdsds");
                 mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                         mGoogleApiClient);
                 if (mLastLocation != null) {
@@ -181,7 +196,7 @@ public class PathFriendsFragment extends Fragment implements
                     if (user != null) {
                         mDatabase.child("users").child(user.getUid()).child("lastLocation").setValue(new MyLocation(mLastLocation));
                     }
-                    Snackbar.make(view, mLastLocation.toString(), Snackbar.LENGTH_LONG)
+                    Snackbar.make(view, "You have shared your last location with other users", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                 }
 
@@ -201,14 +216,21 @@ public class PathFriendsFragment extends Fragment implements
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
+        if(mMap==null)
+            mMap = googleMap;
         // Add a marker in Sydney and move the camera
         //LatLng sydney = new LatLng(-34, 151);
         //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*
+        CameraUpdate center=
+                CameraUpdateFactory.newLatLng(new LatLng(40.76793169992044,
+                        -73.98180484771729));
+        CameraUpdate zoom=CameraUpdateFactory.zoomTo(15);
 
-        FirebaseDatabase.getInstance().getReference("users").addValueEventListener(new ValueEventListener() {
+        mMap.moveCamera(center);
+        mMap.animateCamera(zoom);
+
+        mDatabaseInstance.getReference("users").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snap : dataSnapshot.getChildren()) {
