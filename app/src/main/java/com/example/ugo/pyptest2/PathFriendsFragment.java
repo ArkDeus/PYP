@@ -52,7 +52,6 @@ public class PathFriendsFragment extends Fragment implements
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-
     private FloatingActionButton fab;
 
     // TODO: Rename and change types of parameters
@@ -98,8 +97,6 @@ public class PathFriendsFragment extends Fragment implements
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         auth = FirebaseAuth.getInstance();
-        //auth.addAuthStateListener(authListener);
-
 
         if (mGoogleApiClient == null) {
             // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
@@ -121,6 +118,7 @@ public class PathFriendsFragment extends Fragment implements
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mDatabaseInstance = FirebaseDatabase.getInstance();
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         FragmentManager fm = getActivity().getSupportFragmentManager();
         SupportMapFragment supportMapFragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
@@ -172,19 +170,19 @@ public class PathFriendsFragment extends Fragment implements
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        // Camera on last location
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
-        if(mLastLocation!=null)
-        {
-            CameraUpdate center=
+        if (mLastLocation != null) {
+            CameraUpdate center =
                     CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(),
                             mLastLocation.getLongitude()));
-            CameraUpdate zoom=CameraUpdateFactory.zoomTo(15);
+            CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
 
             mMap.moveCamera(center);
             mMap.animateCamera(zoom);
         }
-
+        // Share Location listener
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -192,16 +190,17 @@ public class PathFriendsFragment extends Fragment implements
                     // TODO: Consider calling
                     return;
                 }
+                // Camera zoom on new location
                 mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                         mGoogleApiClient);
                 CameraUpdate center =
                         CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(),
                                 mLastLocation.getLongitude()));
                 CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
-
                 mMap.moveCamera(center);
                 mMap.animateCamera(zoom);
 
+                // Send last location to Firabase database
                 if (mLastLocation != null) {
                     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                     if (user != null) {
@@ -229,10 +228,6 @@ public class PathFriendsFragment extends Fragment implements
     public void onMapReady(GoogleMap googleMap) {
         if (mMap == null)
             mMap = googleMap;
-        // Add a marker in Sydney and move the camera
-        //LatLng sydney = new LatLng(-34, 151);
-        //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -243,21 +238,20 @@ public class PathFriendsFragment extends Fragment implements
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-
+        // Start listeners for locations of every users
         mDatabaseInstance.getReference("users").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mMap.clear();
                 for (DataSnapshot snap : dataSnapshot.getChildren()) {
-
                     User user = snap.getValue(User.class);
                     if (user.getLastLocation() != null) {
-                        if (user.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())){
+                        //If it is the current user, we set green color to the market
+                        if (user.getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail())) {
                             LatLng userLatLng = new LatLng(user.getLastLocation().getLatitude(), user.getLastLocation().getLongitude());
                             mMap.addMarker(new MarkerOptions().position(userLatLng).title(user.getEmail())
                                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                        }
-                        else{
+                        } else {
                             LatLng userLatLng = new LatLng(user.getLastLocation().getLatitude(), user.getLastLocation().getLongitude());
                             mMap.addMarker(new MarkerOptions().position(userLatLng).title(user.getEmail()));
                         }
