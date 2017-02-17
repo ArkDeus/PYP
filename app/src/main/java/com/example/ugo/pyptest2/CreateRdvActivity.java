@@ -103,9 +103,9 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
                     Centroid point = new Centroid(meetingPoint.latitude,meetingPoint.longitude);
                     String pointId = mref.push().getKey();
                     mref.child(pointId).setValue(point);
-/*                    Intent intent = new Intent(CreateRdvActivity.this, MainActivity.class);
+                    Intent intent = new Intent(CreateRdvActivity.this, MainActivity.class);
                     startActivity(intent);
-                    finish();*/
+
                 }
             }
         });
@@ -130,6 +130,7 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
         dbref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                //mMap.clear();
                 for (DataSnapshot snap : dataSnapshot.getChildren()) {
                     Centroid centroid = snap.getValue(Centroid.class);
                     LatLng centroidLatLng = new LatLng(centroid.getLatitude(), centroid.getLongitude());
