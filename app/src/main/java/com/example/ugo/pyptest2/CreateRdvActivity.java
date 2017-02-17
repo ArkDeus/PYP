@@ -35,25 +35,36 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.seatgeek.placesautocomplete.PlacesAutocompleteTextView;
 
+/**
+ * Classe pour créer un Rendez-Vous sur l'application, et l'envoyer sur la Database (Firebase)
+ */
+
 public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMapClickListener {
 
+    //Objet Google Maps pour afficher la map à l'écran et interagir avec
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
 
+    //La position de l'utilisateur actuellement
     private Location mLastLocation;
-    PlacesAutocompleteTextView placesAutocomplete;
 
+    //Marqueur pour savoir si un lieu de rendez-vous a déjà été sélectionné
     boolean firstClick = true;
+    //Le Marqueur de rendez-vous
     Marker rdvMarker;
 
+    //Elements d'interface (date, nom du rendez vous, heure)
     private TextView date;
     private TextView name;
     private TextView time;
+    //Bouton de confirmation
     private Button confirm;
 
+    //Le point de rendez vous en LatLng
     LatLng meetingPoint;
 
+    //Les entités Firebase (database)
     FirebaseDatabase database;
     DatabaseReference myRef;
 
@@ -83,10 +94,18 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
         // Connect to the Firebase database
         FirebaseDatabase database = FirebaseDatabase.getInstance();
 
-        // Get a reference to the todoItems child items it the database
+        // Get a reference to the centroids child items it the database
         DatabaseReference myRef = database.getReference("centroids");
 
-
+/**
+ * Ecouteur pour le bouton confirm, lorsuq'on appuie sur Confirm :
+ * On sauvegarde le nouveau rendez-vous dans la base de données,
+ * on sauvegarde le point de rendez-vous dans la base de données (deux entrées séparées).
+ * L'entrée RDVs est l'ensemble des rendez-vous créés par les utilisateurs dans la base de données,
+ * l'entrée dataPoints est l'ensemble des points (coordonnées latitude longitude) utilisés pour les RDVs
+ * On peut supprimer un RDV de la base de données, mais on doit garder l'historique de tous les
+ * points utilisés si on veut tirer parti de l'apprentissage machine, d'où les deux entrées différentes.
+ */
         confirm.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 if (meetingPoint != null) {
@@ -94,15 +113,18 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
                     String sdate = date.getText().toString();
                     String stime = time.getText().toString();
                     String sname = name.getText().toString();
+                    //Utilisateur connecté
                     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                     String creator = user.getEmail();
                     RDV rdv = new RDV(sname, sdate, stime, meetingPoint.latitude, meetingPoint.longitude, creator);
                     String rdvId = mref.push().getKey();
                     mref.child(rdvId).setValue(rdv);
+                    //Envoie de la valeur à la base de données
                     mref = FirebaseDatabase.getInstance().getReference("dataPoints");
                     Centroid point = new Centroid(meetingPoint.latitude,meetingPoint.longitude);
                     String pointId = mref.push().getKey();
                     mref.child(pointId).setValue(point);
+                    //Retour au menu principal
                     Intent intent = new Intent(CreateRdvActivity.this, MainActivity.class);
                     startActivity(intent);
 
@@ -111,20 +133,26 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
         });
     }
 
+    //Appel lorsqu'on est connecté aux services Google Play etc.
     @Override
     public void onConnected(@Nullable Bundle connectionHint) {
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             return;
         }
+        //Récupère la position de l'utilisateur
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
         if (mLastLocation != null) {
+            //Affiche la position de l'utilisateur sur la carte
             LatLng position = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(position).title("Your position").snippet("Your position"));
+            mMap.addMarker(new MarkerOptions().position(position).title("Your position").snippet("Your position")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+            //Centre la carte sur la position de l'utilisateur
             mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
             mMap.moveCamera(CameraUpdateFactory.zoomTo(14));
         }
+        //Connexion avec la database pour récupérer les "centroids", c'est à dire les points agrégés ou "clusters"
         final DatabaseReference dbref = FirebaseDatabase.getInstance().getReference("centroids");
         //Code pour remplir la map avec les centroids calculés par l'algorithme de traitement des données
         dbref.addValueEventListener(new ValueEventListener() {
@@ -132,6 +160,7 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
             public void onDataChange(DataSnapshot dataSnapshot) {
                 //mMap.clear();
                 for (DataSnapshot snap : dataSnapshot.getChildren()) {
+                    //Création d'un centroid à partir de la database
                     Centroid centroid = snap.getValue(Centroid.class);
                     LatLng centroidLatLng = new LatLng(centroid.getLatitude(), centroid.getLongitude());
                     mMap.addMarker(new MarkerOptions().position(centroidLatLng).title("Hotspot").snippet("Hotspot"));

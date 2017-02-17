@@ -4,6 +4,10 @@ package com.example.ugo.pyptest2;
  * Created by user on 16/02/2017.
  */
 
+/**
+ * Classe Centroid pour stocker les points (latitude et longitude)
+ */
+
 public class Centroid {
     private Double latitude;
     private Double longitude;

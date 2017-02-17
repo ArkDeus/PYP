@@ -11,6 +11,13 @@ import com.seatgeek.placesautocomplete.OnPlaceSelectedListener;
 import com.seatgeek.placesautocomplete.PlacesAutocompleteTextView;
 import com.seatgeek.placesautocomplete.model.Place;
 
+/**
+ * CLASSE BAC A SABLE, NE PAS EN TENIR COMPTE /!\
+ * /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\
+ *
+ */
+
+
 public class ChooseLocationActivity extends AppCompatActivity implements OnMapReadyCallback{
     PlacesAutocompleteTextView placesAutocomplete;
 
