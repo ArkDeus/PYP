@@ -27,6 +27,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity
     private DatabaseReference mDatabase;
 
     private FloatingActionButton fab;
+    private Button rdv;
 
     private GoogleMap mMap;
 
@@ -124,6 +126,19 @@ public class MainActivity extends AppCompatActivity
                         .setAction("Action", null).show();
             }
         });
+
+        //Créer un rdv bouton
+        rdv = (Button) findViewById(R.id.rdv);
+        rdv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, CreateRdvActivity.class);
+                startActivity(intent);
+                finish();
+
+            }
+        });
+
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
