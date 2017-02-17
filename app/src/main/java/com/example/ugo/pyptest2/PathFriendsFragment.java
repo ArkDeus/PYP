@@ -2,7 +2,6 @@ package com.example.ugo.pyptest2;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -14,7 +13,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -175,13 +173,17 @@ public class PathFriendsFragment extends Fragment implements
     public void onConnected(@Nullable Bundle bundle) {
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
-        CameraUpdate center=
-                CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(),
-                        mLastLocation.getLongitude()));
-        CameraUpdate zoom=CameraUpdateFactory.zoomTo(15);
+        if(mLastLocation!=null)
+        {
+            CameraUpdate center=
+                    CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(),
+                            mLastLocation.getLongitude()));
+            CameraUpdate zoom=CameraUpdateFactory.zoomTo(15);
 
-        mMap.moveCamera(center);
-        mMap.animateCamera(zoom);
+            mMap.moveCamera(center);
+            mMap.animateCamera(zoom);
+        }
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -244,6 +246,7 @@ public class PathFriendsFragment extends Fragment implements
         mDatabaseInstance.getReference("users").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                mMap.clear();
                 for (DataSnapshot snap : dataSnapshot.getChildren()) {
 
                     User user = snap.getValue(User.class);

@@ -1,16 +1,13 @@
 package com.example.ugo.pyptest2;
 
-import android.*;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -29,7 +26,6 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.vision.text.Text;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -37,11 +33,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.seatgeek.placesautocomplete.OnPlaceSelectedListener;
 import com.seatgeek.placesautocomplete.PlacesAutocompleteTextView;
-import com.seatgeek.placesautocomplete.model.Place;
-
-import java.io.Console;
 
 public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, GoogleMap.OnMapClickListener {
@@ -111,8 +103,9 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
                     Centroid point = new Centroid(meetingPoint.latitude,meetingPoint.longitude);
                     String pointId = mref.push().getKey();
                     mref.child(pointId).setValue(point);
-                    Intent intent = new Intent(CreateRdvActivity.this, MainActivity.class);
+/*                    Intent intent = new Intent(CreateRdvActivity.this, MainActivity.class);
                     startActivity(intent);
+                    finish();*/
                 }
             }
         });
