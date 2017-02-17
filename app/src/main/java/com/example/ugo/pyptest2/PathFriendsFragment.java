@@ -107,7 +107,7 @@ public class PathFriendsFragment extends Fragment implements
             // See https://g.co/AppIndexing/AndroidStudio for more information.
             mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
                     .addApi(LocationServices.API)
-                    .addApi(AppIndex.API).addConnectionCallbacks( this)
+                    .addApi(AppIndex.API).addConnectionCallbacks(this)
                     .build();
         }
 
@@ -118,23 +118,15 @@ public class PathFriendsFragment extends Fragment implements
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_path_friends, container, false);
 
-        fab = (FloatingActionButton)  rootView.findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mDatabaseInstance = FirebaseDatabase.getInstance();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         FragmentManager fm = getActivity().getSupportFragmentManager();
         SupportMapFragment supportMapFragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
-       supportMapFragment = SupportMapFragment.newInstance();
-            fm.beginTransaction().replace(R.id.map, supportMapFragment).commit();
+        supportMapFragment = SupportMapFragment.newInstance();
+        fm.beginTransaction().replace(R.id.map, supportMapFragment).commit();
 
         supportMapFragment.getMapAsync(this);
 
@@ -181,6 +173,15 @@ public class PathFriendsFragment extends Fragment implements
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        CameraUpdate center=
+                CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(),
+                        mLastLocation.getLongitude()));
+        CameraUpdate zoom=CameraUpdateFactory.zoomTo(15);
+
+        mMap.moveCamera(center);
+        mMap.animateCamera(zoom);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -188,9 +189,16 @@ public class PathFriendsFragment extends Fragment implements
                     // TODO: Consider calling
                     return;
                 }
-                Log.w("YOLOO","sdsds");
                 mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                         mGoogleApiClient);
+                CameraUpdate center =
+                        CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(),
+                                mLastLocation.getLongitude()));
+                CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
+
+                mMap.moveCamera(center);
+                mMap.animateCamera(zoom);
+
                 if (mLastLocation != null) {
                     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                     if (user != null) {
@@ -216,19 +224,22 @@ public class PathFriendsFragment extends Fragment implements
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        if(mMap==null)
+        if (mMap == null)
             mMap = googleMap;
         // Add a marker in Sydney and move the camera
         //LatLng sydney = new LatLng(-34, 151);
         //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*
-        CameraUpdate center=
-                CameraUpdateFactory.newLatLng(new LatLng(40.76793169992044,
-                        -73.98180484771729));
-        CameraUpdate zoom=CameraUpdateFactory.zoomTo(15);
-
-        mMap.moveCamera(center);
-        mMap.animateCamera(zoom);
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
 
         mDatabaseInstance.getReference("users").addValueEventListener(new ValueEventListener() {
             @Override
@@ -239,7 +250,7 @@ public class PathFriendsFragment extends Fragment implements
                     if (user.getLastLocation() != null) {
                         LatLng userLatLng = new LatLng(user.getLastLocation().getLatitude(), user.getLastLocation().getLongitude());
                         mMap.addMarker(new MarkerOptions().position(userLatLng).title(user.getEmail()));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(userLatLng));
+                        //mMap.moveCamera(CameraUpdateFactory.newLatLng(userLatLng));
                     }
                 }
 

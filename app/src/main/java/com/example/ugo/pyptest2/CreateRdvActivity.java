@@ -1,6 +1,7 @@
 package com.example.ugo.pyptest2;
 
 import android.*;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -110,7 +111,8 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
                     Centroid point = new Centroid(meetingPoint.latitude,meetingPoint.longitude);
                     String pointId = mref.push().getKey();
                     mref.child(pointId).setValue(point);
-
+                    Intent intent = new Intent(CreateRdvActivity.this, MainActivity.class);
+                    startActivity(intent);
                 }
             }
         });
