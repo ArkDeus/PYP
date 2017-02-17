@@ -4,7 +4,17 @@ package com.example.ugo.pyptest2;
  * Created by user on 16/02/2017.
  */
 
+/**
+ * Classe RDV qui correspond à l'instance firebase "RDVs"
+ * La classe Java correspondante à une instance firebase doit suivre
+ * un "pattern Javabeans" : https://fr.wikipedia.org/wiki/JavaBeans
+ */
+
 public class RDV {
+    /**
+     * Variables d'instance pour le nom du rdv, la date, l'heure, la position (latitude longitude)
+     * et le créateur du rendez vous. Toutes ces variables ont des getters et setters type javabeans
+     */
     private String name;
     private String date;
     private String time;

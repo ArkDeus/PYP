@@ -6,6 +6,9 @@ package com.example.ugo.pyptest2;
 
 /**
  * Classe Centroid pour stocker les points (latitude et longitude)
+ * Cette classe correspond à l'instance firebase "centroids", écrite en pattern javabeans (voir la class
+ * RDV pour plus d'informations)
+ * Un centroid est simplement un couple latitude longitude
  */
 
 public class Centroid {

@@ -133,7 +133,7 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
         });
     }
 
-    //Appel lorsqu'on est connecté aux services Google Play etc.
+    //Appel lorsqu'on est connecté aux services Google Play etc. (Activité prête à être utilisée)
     @Override
     public void onConnected(@Nullable Bundle connectionHint) {
         if (ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -162,6 +162,7 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
                 for (DataSnapshot snap : dataSnapshot.getChildren()) {
                     //Création d'un centroid à partir de la database
                     Centroid centroid = snap.getValue(Centroid.class);
+                    //On récupère le centroid, et on affiche une zone de 50 mètres autour de celui ci
                     LatLng centroidLatLng = new LatLng(centroid.getLatitude(), centroid.getLongitude());
                     mMap.addMarker(new MarkerOptions().position(centroidLatLng).title("Hotspot").snippet("Hotspot"));
                     Circle circle = mMap.addCircle(new CircleOptions()
@@ -212,11 +213,13 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        //Création d'un listener sur la map
         mMap.setOnMapClickListener(this);
 
 
     }
 
+    //Lorsque l'on clique sur la map, on créé un nouveau marker qui correspond au rdv et on focus la map dessus
     @Override
     public void onMapClick(LatLng point) {
         if (!firstClick) {
