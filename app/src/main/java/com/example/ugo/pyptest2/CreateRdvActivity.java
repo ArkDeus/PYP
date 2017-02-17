@@ -29,6 +29,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.vision.text.Text;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -57,6 +59,8 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
     private TextView time;
     private Button confirm;
 
+    LatLng meetingPoint;
+
     FirebaseDatabase database;
     DatabaseReference myRef;
 
@@ -72,7 +76,7 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
 
         date = (TextView) findViewById(R.id.date);
         time = (TextView) findViewById(R.id.time);
-        date = (TextView) findViewById(R.id.name);
+        name = (TextView) findViewById(R.id.name);
         confirm = (Button) findViewById(R.id.confirm);
 
         //Location API activation
@@ -92,7 +96,22 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
 
         confirm.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
+                if (meetingPoint != null) {
+                    DatabaseReference mref = FirebaseDatabase.getInstance().getReference("RDVs");
+                    String sdate = date.getText().toString();
+                    String stime = time.getText().toString();
+                    String sname = name.getText().toString();
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    String creator = user.getEmail();
+                    RDV rdv = new RDV(sname, sdate, stime, meetingPoint.latitude, meetingPoint.longitude, creator);
+                    String rdvId = mref.push().getKey();
+                    mref.child(rdvId).setValue(rdv);
+                    mref = FirebaseDatabase.getInstance().getReference("dataPoints");
+                    Centroid point = new Centroid(meetingPoint.latitude,meetingPoint.longitude);
+                    String pointId = mref.push().getKey();
+                    mref.child(pointId).setValue(point);
 
+                }
             }
         });
     }
@@ -183,5 +202,6 @@ public class CreateRdvActivity extends FragmentActivity implements OnMapReadyCal
         rdvMarker = mMap.addMarker(new MarkerOptions().position(point).title("Your meeting point").snippet("Meeting point")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
+        meetingPoint = point;
     }
 }
