@@ -1,18 +1,24 @@
 package com.example.ugo.pyptest2;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.ArrayList;
 
 
 /**
@@ -32,6 +38,7 @@ public class ListRDVFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private ArrayList<RDV> listRDV = new ArrayList<RDV>();
 
     private OnFragmentInteractionListener mListener;
 
@@ -116,10 +123,20 @@ public class ListRDVFragment extends Fragment {
             protected void populateView(View view, RDV rdv, int position) {
                 ((TextView)view.findViewById(android.R.id.text1)).setText(rdv.getName()+" at "+rdv.getDate()+", "+rdv.getTime());
                 ((TextView)view.findViewById(android.R.id.text2)).setText("created by "+rdv.getCreator());
-
+                listRDV.add(position,rdv);
             }
         };
         messagesView.setAdapter(mAdapter);
+        messagesView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+            @Override
+            public void onItemClick(AdapterView<?>adapter,View v, int position, long id){
+                RDV rdv = listRDV.get(position);
+                Log.i("test",rdv.getName());
+                String uri = "http://maps.google.com/maps?f=d&hl=en&daddr="+rdv.getLatitude()+","+rdv.getLongitude();
+                Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
+                startActivity(Intent.createChooser(intent, "Select an application"));
+            }
+        });
 
     }
 
