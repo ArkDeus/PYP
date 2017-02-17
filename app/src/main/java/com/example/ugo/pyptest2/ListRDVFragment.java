@@ -7,6 +7,12 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.firebase.ui.database.FirebaseListAdapter;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 
 /**
@@ -58,13 +64,20 @@ public class ListRDVFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        View view = inflater.inflate(R.layout.fragment_list_rdv, container, false);
+
+
+
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_list_rdv, container, false);
+        return view;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -89,6 +102,25 @@ public class ListRDVFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onActivityCreated (Bundle savedInstanceState){
+        super.onActivityCreated(savedInstanceState);
+        ListView messagesView = (ListView) getView().findViewById(R.id.list_rdv);
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("RDVs");
+
+        FirebaseListAdapter<RDV> mAdapter = new FirebaseListAdapter<RDV>(getActivity(), RDV.class, android.R.layout.two_line_list_item, ref) {
+            @Override
+            protected void populateView(View view, RDV rdv, int position) {
+                ((TextView)view.findViewById(android.R.id.text1)).setText(rdv.getName()+" at "+rdv.getDate()+", "+rdv.getTime());
+                ((TextView)view.findViewById(android.R.id.text2)).setText("created by "+rdv.getCreator());
+
+            }
+        };
+        messagesView.setAdapter(mAdapter);
+
     }
 
     /**
